@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Surveillance Robot - Interactive Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed with a top-down narrative flow to guide the user through the project logically. It starts with the high-level 'Project Philosophy' to set the context. This is followed by an interactive 'Project Phases' section, which acts as the primary navigation, allowing users to explore each phase in detail. Clicking a phase dynamically updates the 'Phase Details', 'Components & Budget', and 'Technical Deliverables' sections below. This task-oriented structure (exploring by phase) was chosen over a simple linear report format to make the dense technical information more digestible and allow users to compare phases easily. A dedicated 'Power Analysis' section with an interactive chart provides a deep dive into a critical, data-heavy aspect of the project. This structure enhances usability by breaking the project into thematic, interactive chunks. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Project Timeline -> Goal: Show progression -> Viz/Method: Interactive Tabbed Timeline -> Interaction: Click tabs to see phase details -> Justification: More engaging than a static list, allows for focused content display. -> Library/Method: HTML/CSS/JS.
+        - Report Info: Component Lists & Costs -> Goal: Compare costs per phase -> Viz/Method: Dynamic Bar Chart & Filterable Table -> Interaction: Chart updates when a new phase is selected. -> Justification: A chart provides a quick visual summary of costs, while the table offers detailed specs. -> Library/Method: Chart.js for the chart, HTML/JS for the dynamic table.
+        - Report Info: Power Consumption Data -> Goal: Analyze power usage -> Viz/Method: Interactive Bar Chart -> Interaction: Hover to see detailed power draw for different modes. -> Justification: A bar chart is excellent for comparing categorical data like operational modes. -> Library/Method: Chart.js.
+        - Report Info: Technical Deliverables & Software Stack -> Goal: Inform -> Viz/Method: Structured HTML lists -> Interaction: Content updates based on selected phase. -> Justification: Clear, scannable lists are best for this type of information. -> Library/Method: HTML/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfbf7;
+            color: #3f3c36;
+        }
+        .tab-active {
+            background-color: #eaddc7;
+            color: #3f3c36;
+            border-bottom-width: 2px;
+            border-color: #c8b59a;
+        }
+        .tab-inactive {
+            background-color: #f5f1e9;
+            color: #7a7368;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#3f3c36] tracking-tight">Phased Autonomous Surveillance Robot</h1>
+            <p class="mt-3 text-lg text-[#7a7368] max-w-3xl mx-auto">An interactive, budget-optimized implementation plan focusing on software innovation over hardware complexity.</p>
+        </header>
+
+        <main>
+            <section id="philosophy" class="mb-12 bg-white/50 p-6 rounded-2xl shadow-sm border border-gray-200/80">
+                <h2 class="text-2xl font-bold mb-4 text-[#3f3c36]">Project Philosophy</h2>
+                <div class="grid md:grid-cols-2 gap-6 text-[#3f3c36]">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Core Strategy</h3>
+                        <p>Build a technically sophisticated surveillance robot through advanced computer vision and AI algorithms while keeping hardware costs minimal. The focus is on maximizing functionality through intelligent software rather than expensive sensors.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-[#f5f1e9] p-4 rounded-lg">
+                            <span class="block text-2xl font-bold">₹8k-₹12k</span>
+                            <span class="text-sm text-[#7a7368]">Budget Target</span>
+                        </div>
+                        <div class="bg-[#f5f1e9] p-4 rounded-lg">
+                            <span class="block text-2xl font-bold">4-6</span>
+                            <span class="text-sm text-[#7a7368]">Months</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="phases" class="mb-12">
+                <h2 class="text-2xl font-bold mb-4 text-center text-[#3f3c36]">Project Phases</h2>
+                <p class="text-center text-[#7a7368] mb-6 max-w-2xl mx-auto">This project is broken down into three distinct phases, each with specific goals, components, and technical deliverables. Click on a phase to explore its details.</p>
+                <div class="flex justify-center mb-8">
+                    <div class="flex space-x-2 bg-white p-2 rounded-xl shadow-sm border border-gray-200/80">
+                        <button onclick="selectPhase(1)" id="tab-1" class="phase-tab tab-active px-4 py-2 rounded-lg font-semibold transition-colors duration-300">Phase 1</button>
+                        <button onclick="selectPhase(2)" id="tab-2" class="phase-tab tab-inactive px-4 py-2 rounded-lg font-semibold transition-colors duration-300">Phase 2</button>
+                        <button onclick="selectPhase(3)" id="tab-3" class="phase-tab tab-inactive px-4 py-2 rounded-lg font-semibold transition-colors duration-300">Phase 3</button>
+                    </div>
+                </div>
+
+                <div id="phase-details" class="bg-white/50 p-6 rounded-2xl shadow-sm border border-gray-200/80 transition-all duration-500">
+                    <div class="text-center mb-6">
+                        <h3 id="phase-title" class="text-2xl font-bold text-[#3f3c36]"></h3>
+                        <p id="phase-goal" class="text-[#7a7368] mt-1"></p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-bold text-xl mb-3 text-[#3f3c36]">Components & Budget</h4>
+                             <p class="text-sm text-gray-500 mb-4">This chart shows the cost distribution for the selected phase. The total projected cost for the project is also updated as you navigate through phases.</p>
+                            <div class="chart-container mb-6">
+                                <canvas id="budgetChart"></canvas>
+                            </div>
+                             <div class="text-center">
+                                <span class="text-lg font-medium text-[#7a7368]">Cumulative Project Cost:</span>
+                                <span id="cumulative-cost" class="text-2xl font-bold text-[#3f3c36]"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xl mb-3 text-[#3f3c36]">Technical Deliverables</h4>
+                            <ul id="phase-deliverables" class="space-y-3 text-[#3f3c36]">
+                            </ul>
+                        </div>
+                    </div>
+                     <div class="mt-8">
+                        <h4 class="font-bold text-xl mb-3 text-[#3f3c36]">Component Details</h4>
+                         <p class="text-sm text-gray-500 mb-4">A detailed breakdown of the components required for this phase, including specifications and justifications.</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg">
+                                <thead class="bg-[#f5f1e9]">
+                                    <tr>
+                                        <th class="text-left py-2 px-4 font-semibold">Component</th>
+                                        <th class="text-left py-2 px-4 font-semibold">Specification / Purpose</th>
+                                        <th class="text-right py-2 px-4 font-semibold">Cost (₹)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="component-table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="power" class="mb-12 bg-white/50 p-6 rounded-2xl shadow-sm border border-gray-200/80">
+                <h2 class="text-2xl font-bold mb-4 text-center text-[#3f3c36]">Power Consumption Analysis</h2>
+                <p class="text-center text-[#7a7368] mb-6 max-w-2xl mx-auto">Understanding power draw is critical for ensuring operational autonomy. This chart breaks down the robot's estimated power consumption across different operational modes. Hover over the bars for details.</p>
+                <div class="chart-container">
+                    <canvas id="powerChart"></canvas>
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <script>
+        const phaseData = {
+            1: {
+                title: "Core Rover Foundation",
+                goal: "Establish a basic mobile platform with remote control and a live video feed.",
+                cost: 7630,
+                components: [
+                    { name: "Raspberry Pi 4B", spec: "4GB RAM model", cost: 4500 },
+                    { name: "MicroSD Card", spec: "64GB Class 10", cost: 600 },
+                    { name: "Pi Camera Module", spec: "8MP v2 (official)", cost: 1200 },
+                    { name: "Basic Chassis Kit", spec: "4WD smart car chassis", cost: 800 },
+                    { name: "DC Motors", spec: "TT gear motors (4x)", cost: 200 },
+                    { name: "L298N Driver", spec: "Dual motor controller", cost: 150 },
+                    { name: "Jumper Wires", spec: "Male-female set", cost: 100 },
+                    { name: "Breadboard", spec: "Half-size", cost: 80 },
+                ],
+                deliverables: [
+                    "<strong>Mobile Web Interface:</strong> Browser-based control panel on local network.",
+                    "<strong>Live Video Streaming:</strong> Real-time 480p@15fps camera feed.",
+                    "<strong>Remote Control:</strong> WASD keyboard controls for movement.",
+                    "<strong>Basic Telemetry:</strong> Display battery status and connection quality.",
+                    "<strong>Network Setup:</strong> Raspberry Pi acts as a WiFi hotspot.",
+                ]
+            },
+            2: {
+                title: "AI-Powered Computer Vision",
+                goal: "Transform the rover into an intelligent surveillance system using advanced OpenCV.",
+                cost: 1910,
+                components: [
+                    { name: "Pan-Tilt Servo Kit", spec: "Camera positioning (SG90 x2)", cost: 400 },
+                    { name: "Li-Po Battery", spec: "Dedicated robot power (7.4V 2200mAh)", cost: 1200 },
+                    { name: "Charging Module", spec: "Safe charging (TP4056 based)", cost: 150 },
+                    { name: "LEDs & Resistors", spec: "Visual status indicators", cost: 100 },
+                    { name: "Ultrasonic Sensor", spec: "Basic collision avoidance (HC-SR04)", cost: 60 },
+                ],
+                deliverables: [
+                    "<strong>Intelligent Surveillance:</strong> Motion, person, and face detection.",
+                    "<strong>Autonomous Mapping:</strong> Visual SLAM using a single camera.",
+                    "<strong>Route Learning:</strong> Ability to record and replay patrol paths.",
+                    "<strong>Advanced Analytics:</strong> People counting and loitering detection.",
+                    "<strong>Mobile App Integration:</strong> Flutter-based app for alerts and monitoring.",
+                ]
+            },
+            3: {
+                title: "Sensor Integration & Production Readiness",
+                goal: "Finalize the robot into a complete, multi-sensor surveillance ecosystem.",
+                cost: 1300,
+                components: [
+                    { name: "MQ-2 Gas Sensor", spec: "Fire/smoke detection", cost: 200 },
+                    { name: "PIR Motion Sensor", spec: "Backup motion detection", cost: 150 },
+                    { name: "Temperature Sensor", spec: "Environmental monitoring", cost: 100 },
+                    { name: "Buzzer & Status LEDs", spec: "Local alerts", cost: 150 },
+                    { name: "Enclosure Materials", spec: "Weather protection", cost: 500 },
+                    { name: "Mounting Hardware", spec: "Professional assembly", cost: 200 },
+                ],
+                deliverables: [
+                    "<strong>Multi-Sensor Fusion:</strong> Combine camera, PIR, and ultrasonic data.",
+                    "<strong>Emergency Response:</strong> Automated alerts for fire/smoke.",
+                    "<strong>Environmental Monitoring:</strong> Track temperature and humidity.",
+                    "<strong>Weatherproof Design:</strong> Capability for outdoor surveillance.",
+                    "<strong>Battery Optimization:</strong> Smart power management for 4+ hour operation.",
+                ]
+            }
+        };
+
+        let budgetChartInstance;
+        let powerChartInstance;
+        let currentPhase = 1;
+
+        function selectPhase(phase) {
+            currentPhase = phase;
+            
+            document.querySelectorAll('.phase-tab').forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('tab-inactive');
+            });
+            document.getElementById(`tab-${phase}`).classList.add('tab-active');
+            document.getElementById(`tab-${phase}`).classList.remove('tab-inactive');
+
+            updatePhaseDetails();
+            updateBudgetChart();
+            updateComponentTable();
+        }
+
+        function updatePhaseDetails() {
+            const data = phaseData[currentPhase];
+            document.getElementById('phase-title').textContent = `Phase ${currentPhase}: ${data.title}`;
+            document.getElementById('phase-goal').textContent = data.goal;
+            
+            let cumulativeCost = 0;
+            for(let i = 1; i <= currentPhase; i++) {
+                cumulativeCost += phaseData[i].cost;
+            }
+            document.getElementById('cumulative-cost').textContent = `₹${cumulativeCost.toLocaleString()}`;
+
+            const deliverablesList = document.getElementById('phase-deliverables');
+            deliverablesList.innerHTML = '';
+            data.deliverables.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `✅ ${item}`;
+                deliverablesList.appendChild(li);
+            });
+        }
+        
+        function updateComponentTable() {
+            const tableBody = document.getElementById('component-table-body');
+            tableBody.innerHTML = '';
+            const data = phaseData[currentPhase];
+            data.components.forEach(component => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-200/80';
+                row.innerHTML = `
+                    <td class="py-3 px-4">${component.name}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${component.spec}</td>
+                    <td class="py-3 px-4 text-right font-medium">₹${component.cost}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateBudgetChart() {
+            const data = phaseData[currentPhase];
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            
+            const labels = data.components.map(c => c.name);
+            const costs = data.components.map(c => c.cost);
+
+            if (budgetChartInstance) {
+                budgetChartInstance.destroy();
+            }
+
+            budgetChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Phase ${currentPhase} Component Cost (₹)`,
+                        data: costs,
+                        backgroundColor: '#eaddc7',
+                        borderColor: '#c8b59a',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Cost (₹)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Cost: ₹${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPowerChart() {
+            const ctx = document.getElementById('powerChart').getContext('2d');
+            powerChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Standby', 'Surveillance (Stationary)', 'Active Patrol'],
+                    datasets: [{
+                        label: 'Average Power Consumption (W)',
+                        data: [3.75, 7, 11],
+                        backgroundColor: ['#eaddc7', '#d9c9b0', '#c8b59a'],
+                        borderColor: '#b4a287',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Power (W)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    if (label) {
+                                        return `${label}: ${context.raw}W`;
+                                    }
+                                    return `${context.raw}W`;
+                                },
+                                afterLabel: function(context) {
+                                    const mode = context.label;
+                                    if (mode === 'Standby') return 'Battery Life: 8-10 hours';
+                                    if (mode === 'Surveillance (Stationary)') return 'Battery Life: 4.5-5.5 hours';
+                                    if (mode === 'Active Patrol') return 'Battery Life: 2.5-3 hours';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.onload = () => {
+            selectPhase(1);
+            createPowerChart();
+        };
+
+    </script>
+</body>
+</html>
